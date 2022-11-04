@@ -145,7 +145,7 @@ class Vatpy:
 
 		# Plot:
 		fig, ax = plt.subplots(figsize=(6, 5))
-		im = ax.imshow(np.log10(interp), vmin=self.vmin, vmax=self.vmax, extent=(0, 40, 0, 40), origin='lower', cmap='plasma')
+		im = ax.imshow(np.log10(interp), vmin=self.vmin, vmax=self.vmax, extent=(0, 40, 0, 40), origin='lower', cmap='magma')
 		ax.text(0.95, 0.05, f'{round(Time, 2)} Myr', color='w', ha='right', va='bottom', transform=ax.transAxes)
 		ax.set_aspect('equal')
 		ax.set_xlabel('$x$ [pc]')
@@ -173,7 +173,7 @@ class Vatpy:
 
 		# Plot:
 		fig, ax = plt.subplots(figsize=(6, 5))
-		im = ax.imshow(np.log10(interp), vmin=self.vmin, vmax=self.vmax, extent=(0, 40, 0, 40), origin='lower', cmap='plasma')
+		im = ax.imshow(np.log10(interp), vmin=self.vmin, vmax=self.vmax, extent=(0, 40, 0, 40), origin='lower', cmap='magma')
 		ax.text(0.95, 0.05, f'{round(Time, 2)} Myr', color='w', ha='right', va='bottom', transform=ax.transAxes)
 		ax.set_aspect('equal')
 		ax.set_xlabel('$x$ [pc]')
@@ -229,10 +229,10 @@ class Vatpy:
 			# Create density frame:
 			snap = 'snap_' + '000'[:3-len(str(i))] + str(i) + '.hdf5'
 			print(f'Generating artist object for {snap}')
-			interp, clabel, Time = self.density_frame(file=snap, quantity=quantity, zslice=zslice, bins=bins)
+			interp, clabel, Time = self.density_frame(file=snap, unit=unit, zslice=zslice, bins=bins)
 
 			# Create artist object:
-			im = ax.imshow(np.log10(interp), vmin=self.vmin, vmax=self.vmax, extent=(0, 40, 0, 40), origin='lower', cmap='plasma')
+			im = ax.imshow(np.log10(interp), vmin=self.vmin, vmax=self.vmax, extent=(0, 40, 0, 40), origin='lower', cmap='magma')
 			txt = ax.text(0.95, 0.05, f'{round(Time, 2)} Myr', color='w', ha='right', va='bottom', transform=ax.transAxes)
 			artist_objects.append([im, txt])
 		
@@ -352,7 +352,7 @@ class Vatpy:
 
 		return 0
 
-	def phase_plot(self, th=None):
+	def phase_plot(self):
 		'''
 		UNDER CONSTRUCTION
 		'''
@@ -373,7 +373,7 @@ class Vatpy:
 		# Plot:
 		fig, ax = plt.subplots(figsize=(6, 6))
 		im = ax.imshow(np.log10(H.T), vmin=self.vmin, vmax=self.vmax, extent=(xedges[0], xedges[-1], yedges[0], yedges[-1]), origin='lower', cmap='viridis')
-		ax.text(0.95, 0.05, f'{round(Time, 2)} Myr', color='w', ha='right', va='bottom', transform=ax.transAxes)
+		ax.text(0.05, 0.95, f'{round(Time, 2)} Myr', color='k', ha='left', va='top', transform=ax.transAxes)
 		ax.set_xlabel('$\log_{10}(n \ [\mathrm{cm}^{-3}])$')
 		ax.set_ylabel('$\log_{10}(T \ [\mathrm{K}])$')
 		ax.set_xlim(self.xlim)
@@ -393,18 +393,27 @@ class Vatpy:
 		ax.plot(np.log10(rho), np.log10(T_lJ1), c='k', ls=':', lw=1, alpha=0.8, label='1 pc')	
 		ax.legend(frameon=False, loc='lower left')
 
-		# Threshold:
-		if th != None:
-			xHe = 0.1
-			mu = (1 + 4 * xHe)
-			th_iu = mu * self.mp * 10**(th) / iu['udens']
-			print(f'Threshold in internal units: {th_iu}')
-
 		fig.tight_layout()
 		imgcat(fig, height=50)
 		figname = f'phasediagram_{self.f[5:8]}.png'
 		fig.savefig(f'{self.save}/{figname}')
 		print(f'(figure \'{figname}\' saved at \'{self.save}\')')
+
+		return 0
+
+	def convert_numdens(self, n):
+		h, iu = self.read_hdf5(file=self.f)	
+		xHe = 0.1
+		mu = (1 + 4 * xHe)
+		n_in_iu = mu * self.mp * n / iu['udens']
+		print(f'A number density of {n} is equivalent to [internal units]: {n_in_iu}')
+
+		return 0
+	
+	def convert_cgsdens(self, rho):
+		h, iu = self.read_hdf5(file=self.f)
+		rho_in_iu = rho / iu['udens']
+		print(f'A density of {rho} in cgs is equivalent to [internal units]: {rho_in_iu}')
 
 		return 0
 
@@ -416,7 +425,7 @@ class Vatpy:
 		h, iu = self.read_hdf5(file=self.f)
 		Mass = h['PartType0']['Masses'] * iu['umass']
 		Dens = h['PartType0']['Density'] * iu['udens']
-		Radius = ((3*Mass) / (4*np.pi*Dens))**(1/3)	
+		Radius = ((3*Mass) / (4*np.pi*Dens))**(1/3)
 
 		# 2D Histograms:
 		H0, xedges0, yedges0 = np.histogram2d(np.log10(Dens), np.log10(Radius/self.pc), bins=100)
@@ -433,13 +442,13 @@ class Vatpy:
 		cb.ax.xaxis.set_ticks_position('top')
 		cb.ax.xaxis.set_label_position('top')
 		ax[0].set_ylabel('$\log_{10}(r_\mathrm{cell} \ [\mathrm{pc}])$')
-		ax[0].set_ylim(-1.5, 0.5)
+		ax[0].set_ylim(-1, 0.5)
 		ax[1].contourf(np.log10(H1.T), vmin=self.vmin, vmax=self.vmax, extent=(xedges1[0], xedges1[-1], yedges1[0], yedges1[-1]), 
 					   origin='lower', cmap='YlGnBu')
 		ax[1].set_ylabel('$\log_{10}(M_\mathrm{cell} \ [\mathrm{M}_\odot])$')
 		ax[1].set_xlabel(r'$\log_{10}(\rho_\mathrm{gas} \ [\mathrm{g} \ \mathrm{cm}^{-3}]$')	
-		ax[1].set_xlim(-25, -18)
-		ax[1].set_ylim(-2.5, 2)
+		ax[1].set_xlim(self.xlim)
+		ax[1].set_ylim(self.ylim)
 
 		# Jeans length:
 		rho = np.linspace(1.0e-30, 1.0e-15, 100)
@@ -462,6 +471,11 @@ class Vatpy:
 		
 		return 0
 
+	def experiment(self):
+		h, iu = self.read_hdf5(file=self.f)
+		print(len(h['PartType0']['Masses'][:]))
+
+		return 0
 
 # -------------- End of file
 

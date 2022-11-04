@@ -14,19 +14,11 @@ from scipy.interpolate import griddata
 from scipy.ndimage import gaussian_filter
 
 # -------------- import VATPY
-from src.vatpy import Vatpy
+from src import Vatpy
 
 # -------------- arguments
 # initialize argparse:
-hpage = ('powered by...\n\n'+
-		 '`..         `..      `.       `... `......`.......  `..      `.. \n'+
-		 ' `..       `..      `. ..          `..    `..    `.. `..    `.. \n'+
-		 '  `..     `..      `.  `..         `..    `..    `..  `.. `.. \n'+
-		 '   `..   `..      `..   `..        `..    `.......      `.. \n'+
-		 '    `.. `..      `...... `..       `..    `..           `.. \n'+
-		 '     `....      `..       `..      `..    `..           `.. \n'+
-		 '      `..      `..         `..     `..    `..           `.. \n')
-parser = argparse.ArgumentParser(description=hpage, usage='plot [options] filename', formatter_class=argparse.RawDescriptionHelpFormatter)
+parser = argparse.ArgumentParser(description='VATPY quick plot script', usage='plot [options] filename', formatter_class=argparse.RawDescriptionHelpFormatter)
 parser._actions[0].help='Show this help message and exit'
 
 # positional arguments:
@@ -48,7 +40,10 @@ parser.add_argument('-temp', '--temperature', action='store_true', help='Gas tem
 parser.add_argument('-phase', '--phasediagram', action='store_true', help='Gas-phase diagram')
 parser.add_argument('-cell', '--cellmasssizerelation', action='store_true', help='Cell-mass-size relation')
 parser.add_argument('-style', '--mplstyle', action='store', help='Mpl style sheet', default='/home/astro/jpeterss/VATPY/mpl/style.mplstyle')
+parser.add_argument('-numdens', '--numberdensityconversion', action='store', help='Number density conversion to internal units', type=float)
+parser.add_argument('-cgsdens', '--cgsdensityconversion', action='store', help='CGS density conversion to internal units', type=float)
 parser.add_argument('-sink', '--sink', action='store_true', help='Gas density plot with sink particles included')
+parser.add_argument('-exp', '--experiment', action='store_true', help='Experiment')
 
 # read arguments from the command line:
 args = parser.parse_args()
@@ -78,6 +73,12 @@ if args.phasediagram:
 if args.cellmasssizerelation:
 	v.cell_mass_size_relation()
 
+if args.experiment:
+	v.experiment()
 
+if args.numberdensityconversion:
+	v.convert_numdens(n=args.numberdensityconversion)
 
+if args.cgsdensityconversion:
+	v.convert_cgsdens(rho=args.cgsdensityconversion)
 
