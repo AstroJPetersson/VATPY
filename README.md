@@ -6,6 +6,6 @@ __ |/ / _  ___ |  /   _  ____/_  /
 _____/  /_/  |_/_/    /_/     /_/   
 
 </pre>
-#VATPY: Visualisation of Arepo in the Terminal using PYthon
+# VATPY: Visualisation of Arepo in the Terminal using PYthon
 
 
