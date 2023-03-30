@@ -13,16 +13,16 @@ from scipy.interpolate import griddata
 from scipy.ndimage import gaussian_filter
 from imgcat import imgcat
 
-# -------------- Import QuickPlot
-from vatpy import QuickPlot
+# -------------- Import TerminalPlot
+from src import TerminalPlot
 
-# -------------- Plot arguments
+# -------------- Arguments
 # Initialize argparse:
-parser = argparse.ArgumentParser(description='VATPY Quick Plot Script', usage='pl [options] filename', formatter_class=argparse.RawDescriptionHelpFormatter)
+parser = argparse.ArgumentParser(description='VATPY Terminal Plot Script', usage='pl [options] filename', formatter_class=argparse.RawDescriptionHelpFormatter)
 parser._actions[0].help='Show this help message and exit'
 
 # Positional arguments:
-parser.add_argument('filename', help='Name of the snapshot you would like to analyse')
+parser.add_argument('snapshot', help='Name of the snapshot you would like to analyse')
 
 # Optional arguments:
 parser.add_argument('-vmin', '--vmin', action='store', help='Colorbar vmin value', default=None)
@@ -30,61 +30,48 @@ parser.add_argument('-vmax', '--vmax', action='store', help='Colorbar vmax value
 parser.add_argument('-xlim', '--xlim', action='store', help='Axis xlim', default=None, nargs=2, type=float)
 parser.add_argument('-ylim', '--ylim', action='store', help='Axis ylim', default=None, nargs=2, type=float)
 parser.add_argument('-bins', '--numberofbins', action='store', help='Number of bins', default=100, type=int)
-parser.add_argument('-save', '--savepath', action='store', help='Path where to save figures, animations, etc', default=os.getcwd())
-parser.add_argument('-style', '--mplstyle', action='store', help='Mpl style sheet', default='/home/astro/jpeterss/VATPY/mpl/style.mplstyle')
-parser.add_argument('-sformat', '--saveformat', action='store', help='Save format', default=None)
+parser.add_argument('-savepath', '--savepath', action='store', help='Path to save at', default=os.getcwd())
+parser.add_argument('-saveformat', '--saveformat', action='store', help='Format to save as', default=None)
+parser.add_argument('-style', '--mplstyle', action='store', help='Matplotlib style', 
+                    default='/home/astro/jpeterss/VATPY/mpl/tplot.mplstyle')
 
-parser.add_argument('-dens', '--density', action='store_true', help='Gas density plot')
-parser.add_argument('-unit', '--unit', action='store', help='Unit of the gas density plot (number density, chemical species, etc)', default='cgs')
-parser.add_argument('-zslice', '--zslice', action='store', help='Slice (at given z) of the gas density plot', default=None)
-parser.add_argument('-movie', '--movie', action='store_true', help='Movie of how the gas density evolves')
+parser.add_argument('-dens', '--density', action='store_true', help='2D gas density plot')
+parser.add_argument('-axis', '--lookdownaxis', action='store', help='Look down axis', default='z')
+parser.add_argument('-unit', '--unit', action='store', help='Unit of the gas density', default='cgs')
+parser.add_argument('-zslice', '--zslice', action='store', help='Slice of the gas density', default=None)
+parser.add_argument('-zcol', '--zcol', action='store', help='Column slice of the  gas density', default=None, 
+                    nargs=2, type=float)
 
-
-parser.add_argument('-dist', '--distribution', action='store_true', help='Various PDFs of the gas density, temperature, pressure, etc')
-parser.add_argument('-temp', '--temperature', action='store_true', help='Gas temperature plot')
-parser.add_argument('-phase', '--phasediagram', action='store_true', help='Gas-phase diagram')
-parser.add_argument('-cell', '--cellmasssizerelation', action='store_true', help='Cell-mass-size relation')
-parser.add_argument('-numdens', '--numberdensityconversion', action='store', help='Number density conversion to internal units', type=float)
-parser.add_argument('-cgsdens', '--cgsdensityconversion', action='store', help='CGS density conversion to internal units', type=float)
-parser.add_argument('-sink', '--sink', action='store_true', help='Gas density plot with sink particles included')
-
-
-parser.add_argument('-exp', '--experiment', action='store_true', help='Experiment')
+parser.add_argument('-temp', '--temperature', action='store_true', help='2D gas temperature plot')
+parser.add_argument('-phase', '--phase', action='store_true', help='Phase diagram of the gas')
+parser.add_argument('-resolution', '--resolution', action='store_true', help='Resolution plot of the gas')
+parser.add_argument('-jeans', '--jeans', action='store_true', help='Jeans length extension in the resolution plot')
+parser.add_argument('-info', '--information', action='store_true', help='Information about snapshot')
+parser.add_argument('-movie', '--movie', action='store_true', help='Generate and save a movie')
 
 # Read arguments from the command line:
 args = parser.parse_args()
 
-# Run VATPY:
-if args.filename:
-	v = QuickPlot(f=args.filename, save=args.savepath, vmin=args.vmin, vmax=args.vmax, xlim=args.xlim, ylim=args.ylim, style=args.mplstyle, sformat=args.saveformat)
+# Run VATPY TerminalPlot:
+if args.snapshot:
+	v = TerminalPlot(file=args.snapshot, savepath=args.savepath, vmin=args.vmin, vmax=args.vmax, xlim=args.xlim, ylim=args.ylim, style=args.mplstyle, saveformat=args.saveformat)
 
 if args.density:
-	v.density_plot(unit=args.unit, zslice=args.zslice, bins=args.numberofbins)
-
-if args.sink:
-	v.sink_plot(unit=args.unit, zslice=args.zslice, bins=args.numberofbins)
-
-if args.movie:
-	v.movie(unit=args.unit, zslice=args.zslice, bins=args.numberofbins)
-
-if args.distribution:
-	v.distribution_plot()
+	v.density(lookDownAxis=args.lookdownaxis, unit=args.unit, zSlice=args.zslice, zCol=args.zcol, bins=args.numberofbins)
 
 if args.temperature:
-	v.temperature_plot(zslice=args.zslice, bins=args.numberofbins)
+	v.temperature()
 
-if args.phasediagram:
-	v.phase_plot()
+if args.phase:
+	v.phase()
 
-if args.cellmasssizerelation:
-	v.cell_mass_size_relation()
+if args.resolution:
+    v.resolution(bins=args.bins, jeans=args.jeans)
 
-if args.experiment:
-	v.experiment()
+if args.information:
+    v.info()
 
-if args.numberdensityconversion:
-	v.convert_numdens(n=args.numberdensityconversion)
+if args.movie:
+	v.movie()
 
-if args.cgsdensityconversion:
-	v.convert_cgsdens(rho=args.cgsdensityconversion)
 
