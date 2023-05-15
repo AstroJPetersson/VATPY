@@ -15,12 +15,14 @@ def read_hdf5(file):
     umass   = h['Header'].attrs['UnitMass_in_g']
     uvel    = h['Header'].attrs['UnitVelocity_in_cm_per_s']
     utime   = ulength/uvel
+    uaccel  = uvel/utime
     udens   = umass/(ulength**3)
     uinterg = uvel**2
     iu = {
         'ulength' : ulength,
         'umass'   : umass,
         'uvel'    : uvel,
+        'uaccel'  : uaccel,
         'utime'   : utime,
         'udens'   : udens,
         'uinterg' : uinterg
@@ -39,7 +41,8 @@ def read_dump(file, bh=False):
               'ID', 'HomeTask', 'Index', 'FormationOrder']
     
     if bh == True:
-        fields += ['BlackHole', 'BlackHoleAccretionRadius', 'BlackHoleMass', 'BlackHoleDiskGasMass']
+        fields += ['BlackHole', 'BlackHoleAccretionRadius', 'BlackHoleMass', 'BlackHoleDiskGasMass', 
+                   'BlackHoleSinkAccretionRate', 'BlackHoleAccCellsTotalMass']
     
     for i in fields:
         sinks[i] = []        
@@ -61,6 +64,8 @@ def read_dump(file, bh=False):
             struct.add('float64', 'BlackHoleAccretionRadius')
             struct.add('float64', 'BlackHoleMass')
             struct.add('float64', 'BlackHoleDiskGasMass')
+            struct.add('float64', 'BlackHoleSinkAccretionRate')
+            struct.add('float64', 'BlackHoleAccCellsTotalMass')
             
         inbytes = f.read(struct.size())
         data = struct.deserialize(inbytes)
