@@ -1,4 +1,5 @@
 # VATPY: Visualisation of Arepo in the Terminal using PYthon
+<pre>
 usage: pl [options] filename
 
 VATPY Terminal Plot Script
@@ -43,5 +44,6 @@ optional arguments:
   -resolution, --resolution
                         Resolution plot
   -movie, --movie       Create a movie
+</pre>
 
 
