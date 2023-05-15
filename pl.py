@@ -18,7 +18,7 @@ from src import TerminalPlot
 
 # -------------- Arguments
 # Initialize argparse:
-parser = argparse.ArgumentParser(description='VATPY Terminal Plot Script', usage='pl [options] filename', formatter_class=argparse.RawDescriptionHelpFormatter)
+parser = argparse.ArgumentParser(description='VATPY Terminal Plot Script', usage='pl [options] snapshot', formatter_class=argparse.RawDescriptionHelpFormatter)
 parser._actions[0].help='Show this help message and exit'
 
 # Positional arguments:

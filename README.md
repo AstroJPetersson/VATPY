@@ -1,6 +1,6 @@
 # VATPY: Visualisation of Arepo in the Terminal using PYthon
 <pre>
-usage: pl [options] filename
+usage: pl [options] snapshot
 
 VATPY Terminal Plot Script
 
