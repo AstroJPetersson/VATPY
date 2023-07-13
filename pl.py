@@ -25,29 +25,37 @@ parser._actions[0].help='Show this help message and exit'
 parser.add_argument('snapshot', help='Snapshot to analyse')
 
 # Optional arguments:
-parser.add_argument('-vmin', '--vmin', action='store', help='Colorbar vmin value', default=None)
-parser.add_argument('-vmax', '--vmax', action='store', help='Colorbar vmax value', default=None)
+parser.add_argument('-vmin', '--vmin', action='store', help='Colorbar vmin value', default=None, type=float)
+parser.add_argument('-vmax', '--vmax', action='store', help='Colorbar vmax value', default=None, type=float)
 parser.add_argument('-xlim', '--xlim', action='store', help='Axis xlim', default=None, nargs=2, type=float)
 parser.add_argument('-ylim', '--ylim', action='store', help='Axis ylim', default=None, nargs=2, type=float)
-parser.add_argument('-box', '--box', action='store', help='Box zoom in', default=None, nargs=2, type=float)
+parser.add_argument('-box', '--box', action='store', help='Box limits', default=None, nargs=2, type=float)
 parser.add_argument('-bins', '--numberofbins', action='store', help='Number of bins', default=100, type=int)
-parser.add_argument('-savepath', '--savepath', action='store', help='Save path', default=os.getcwd())
-parser.add_argument('-saveformat', '--saveformat', action='store', help='Save format', default=None)
-parser.add_argument('-style', '--mplstyle', action='store', help='Matplotlib style sheet', 
+parser.add_argument('-nlvls', '--numberoflevels', action='store', help='Number of levels', default=5, type=int)
+parser.add_argument('-savepath', '--savepath', action='store', help='Path to save at', default=os.getcwd())
+parser.add_argument('-saveformat', '--saveformat', action='store', help='Format to save in', default=None)
+parser.add_argument('-style', '--mplstyle', action='store', help='Matplotlib style option', 
                     default='/home/astro/jpeterss/VATPY/mpl/tplot.mplstyle')
+parser.add_argument('-imgcatoff', '--imgcatoff', action='store_true', help="Turn off imgcat", default=False)
+parser.add_argument('-imgcatw', '--imgcatwidth', action='store', help="Imgcat width in number of characters", default=None, type=int)
+parser.add_argument('-imgcath', '--imgcatheight', action='store', help="Imgcat height in number of lines", default=None, type=int)
+
 
 parser.add_argument('-info', '--information', action='store_true', help='Information about snapshot')
 
-parser.add_argument('-dens', '--density', action='store_true', help='2D gas density plot')
-parser.add_argument('-axis', '--axis', action='store', help='Look down axis', default='z')
+parser.add_argument('-dens', '--density', action='store_true', help='Gas density plot')
+parser.add_argument('-axis', '--axis', action='store', help='Look through axis', default='z')
 parser.add_argument('-unit', '--unit', action='store', help='Gas density unit', default='cgs')
 parser.add_argument('-cut', '--cut', action='store', help='Gas density cut', default=None)
 parser.add_argument('-col', '--column', action='store', help='Gas density column', default=None, nargs=2, type=float)
 
-parser.add_argument('-temp', '--temperature', action='store_true', help='2D gas temperature plot')
-parser.add_argument('-phase', '--phasediagram', action='store_true', help='Phase diagram')
-parser.add_argument('-num', '--numberdensity', action='store_true', help='Number density instead of mass density')
+parser.add_argument('-temp', '--temperature', action='store_true', help='Gas temperature plot')
+parser.add_argument('-phase', '--phase', action='store_true', help='Phase diagram')
+parser.add_argument('-num', '--numberdensity', action='store_true', help='Use number densities instead of mass densities')
 parser.add_argument('-resolution', '--resolution', action='store_true', help='Resolution plot')
+parser.add_argument('-smooth', '--smooth', action='store', help='Contour smoothing strength', default=0, type=int)
+
+parser.add_argument('-stellar', '--stellar', action='store_true', help='Stellar density plot')
 parser.add_argument('-movie', '--movie', action='store_true', help='Create a movie')
 
 
@@ -59,29 +67,37 @@ args = parser.parse_args()
 print('\nWelcome to VATPY:')
 
 if args.snapshot:
-    print(f'  * Begin by reading data of {args.snapshot}')
-    v = TerminalPlot(file=args.snapshot, savepath=args.savepath, vmin=args.vmin, vmax=args.vmax, xlim=args.xlim, ylim=args.ylim, style=args.mplstyle, saveformat=args.saveformat)
+    print(f'  * Reading data of {args.snapshot}')
+    v = TerminalPlot(file=args.snapshot, savepath=args.savepath, vmin=args.vmin, vmax=args.vmax, xlim=args.xlim, ylim=args.ylim, 
+                     style=args.mplstyle, saveformat=args.saveformat, imgcatoff=args.imgcatoff, imgcatw=args.imgcatwidth, imgcath=args.imgcatheight)
 
 if args.information:
     v.info()
 
 if args.density:
-    print(f'  * Now generate figure of the gas density')
+    print(f'  * Gas density plot')
     v.density(bins=args.numberofbins, axis=args.axis, unit=args.unit, cut=args.cut, column=args.column, box=args.box)
 
 if args.temperature:
-    print(f'  * Now generate figure of the gas temperature')
+    print(f'  * Gas temperature plot')
     v.temperature(bins=args.numberofbins, axis=args.axis, cut=args.cut, column=args.column, box=args.box)
 
-if args.phasediagram:
-	v.phase_diagram(bins=args.numberofbins, num=args.numberdensity)
+if args.phase:
+    print(f'  * Phase diagram')
+    v.phase(bins=args.numberofbins, num=args.numberdensity)
 
 if args.resolution:
-    v.resolution(bins=args.numberofbins)
+    print(f'  * Resolution plot')
+    v.resolution(bins=args.numberofbins, smooth=args.smooth, nlvls=args.numberoflevels)
+
+if args.stellar:
+    print(f'  * Stellar density plot')
+    v.stellar(bins=args.numberofbins, axis=args.axis, box=args.box)
 
 if args.movie:
-	v.movie()
+    print(f'  * Creating a movie')
+    v.movie()
 
-print('  * The End\n')
+print('')
 
 

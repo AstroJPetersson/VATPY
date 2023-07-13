@@ -40,13 +40,19 @@ def temperature(h, iu):
     mp   = 1.6726e-24    #[g]
     kb   = 1.380658e-16  #[erg K^-1]
     
-    # Convert gas mass densities into number densities:
-    numDens = number_density(h, iu)
+    if 'ChemicalAbundances' in h['PartType0'].keys():
+        # Convert mass densities into number densities:
+        numDens = number_density(h, iu)
 
-    # Calculate the temperature of gas cells:
-    interg = h['PartType0']['InternalEnergy'] * iu['uinterg']
-    mu     = (numDens['HII'] * 1 + numDens['HI'] * 1 + numDens['H2'] * 2 + numDens['He'] * 4 + numDens['CO'] * 14) / numDens['Total']
-    temp   = (2 * mu * mp * interg) / (3 * kb)
+        # Estimate the temperature of each gas cell:
+        interg = h['PartType0']['InternalEnergy'] * iu['uinterg']
+        mu     = (numDens['HII'] * 1 + numDens['HI'] * 1 + numDens['H2'] * 2 + numDens['He'] * 4 + numDens['CO'] * 14) / numDens['Total']
+        temp   = (2 * mu * mp * interg) / (3 * kb)
+    else:
+        xHe = 0.1
+        mu  = (1 + 4 * xHe)
+        interg = h['PartType0']['InternalEnergy'] * iu['uinterg']
+        temp   = (2 * mu * mp * interg) / (3 * kb)
 
     return temp
 
@@ -54,13 +60,14 @@ def temperature(h, iu):
 def density_frame(file, bins=100, axis='z', unit='cgs', cut=None, column=None, box=None):
     # Units:
     pc   = 3.08567758e18                #[cm]
+    kpc  = 1e3 * pc
     Myr  = 1e6 * 365.25 * 24 * 60 * 60  #[s]
     
     # Read the data:
     h, iu   = read_hdf5(file=file)
-    boxSize = h['Header'].attrs['BoxSize'] * iu['ulength'] / pc
+    boxSize = h['Header'].attrs['BoxSize'] * iu['ulength'] / kpc
     time    = h['Header'].attrs['Time'] * iu['utime'] / Myr
-    pos     = h['PartType0']['Coordinates'][:] * iu['ulength'] / pc
+    pos     = h['PartType0']['Coordinates'][:] * iu['ulength'] / kpc
     dens    = h['PartType0']['Density'][:] * iu['udens']
 
     # Generate the grid:
@@ -74,7 +81,7 @@ def density_frame(file, bins=100, axis='z', unit='cgs', cut=None, column=None, b
     dim = 2
     if cut:
         Z   = cut
-        dZ  = 1 / pc
+        dZ  = 1 / kpc
         dim = 3
     elif column:
         Z, dZ = np.linspace(boxMin, boxMax, bins, retstep=True)
@@ -119,20 +126,21 @@ def density_frame(file, bins=100, axis='z', unit='cgs', cut=None, column=None, b
     # Interpolation:
     interp = NearestNDInterpolator(ort, dens)
     interpDens = interp(XX, YY, ZZ)
-    interpDens = np.sum(interpDens * dZ * pc, axis=2)
+    interpDens = np.sum(interpDens * dZ * kpc, axis=2)
 
     return interpDens, colorbarLabel, time, boxMin, boxMax
 
 
 def temperature_frame(file, bins=100, axis='z', cut=None, column=None, box=None):
     pc   = 3.08567758e18                #[cm]
+    kpc  = 1e3 * pc
     Myr  = 1e6 * 365.25 * 24 * 60 * 60  #[s]
 
     # Read the data:
     h, iu   = read_hdf5(file=file)
-    boxSize = h['Header'].attrs['BoxSize'] * iu['ulength'] / pc
+    boxSize = h['Header'].attrs['BoxSize'] * iu['ulength'] / kpc
     time    = h['Header'].attrs['Time'] * iu['utime'] / Myr
-    pos     = h['PartType0']['Coordinates'][:] * iu['ulength'] / pc
+    pos     = h['PartType0']['Coordinates'][:] * iu['ulength'] / kpc
     dens    = h['PartType0']['Density'][:] * iu['udens']
     temp    = temperature(h, iu)
 
