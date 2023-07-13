@@ -18,31 +18,41 @@ optional arguments:
   -ylim YLIM YLIM, --ylim YLIM YLIM
                         Axis ylim
   -box BOX BOX, --box BOX BOX
-                        Box zoom in
+                        Box limits
   -bins NUMBEROFBINS, --numberofbins NUMBEROFBINS
                         Number of bins
+  -nlvls NUMBEROFLEVELS, --numberoflevels NUMBEROFLEVELS
+                        Number of levels
   -savepath SAVEPATH, --savepath SAVEPATH
-                        Save path
+                        Path to save at
   -saveformat SAVEFORMAT, --saveformat SAVEFORMAT
-                        Save format
+                        Format to save in
   -style MPLSTYLE, --mplstyle MPLSTYLE
-                        Matplotlib style sheet
+                        Matplotlib style option
+  -imgcatoff, --imgcatoff
+                        Turn off imgcat
+  -imgcatw IMGCATWIDTH, --imgcatwidth IMGCATWIDTH
+                        Imgcat width in number of characters
+  -imgcath IMGCATHEIGHT, --imgcatheight IMGCATHEIGHT
+                        Imgcat height in number of lines
   -info, --information  Information about snapshot
-  -dens, --density      2D gas density plot
+  -dens, --density      Gas density plot
   -axis AXIS, --axis AXIS
-                        Look down axis
+                        Look through axis
   -unit UNIT, --unit UNIT
                         Gas density unit
   -cut CUT, --cut CUT   Gas density cut
   -col COLUMN COLUMN, --column COLUMN COLUMN
                         Gas density column
-  -temp, --temperature  2D gas temperature plot
-  -phase, --phasediagram
-                        Phase diagram
+  -temp, --temperature  Gas temperature plot
+  -phase, --phase       Phase diagram
   -num, --numberdensity
-                        Number density instead of mass density
+                        Use number densities instead of mass densities
   -resolution, --resolution
                         Resolution plot
+  -smooth SMOOTH, --smooth SMOOTH
+                        Contour smoothing strength
+  -stellar, --stellar   Stellar density plot
   -movie, --movie       Create a movie
 </pre>
 
