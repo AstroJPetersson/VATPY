@@ -82,7 +82,7 @@ class TerminalPlot:
                                                               cut=cut, column=column, box=box)
 
         # Plot:
-        fig, ax = plt.subplots(figsize=(6, 6))
+        fig, ax = plt.subplots(figsize=(7, 6))
         im = ax.imshow(np.log10(dens), vmin=self.vmin, vmax=self.vmax, extent=(boxMin, boxMax, boxMin, boxMax), 
                        origin='lower', cmap='BuPu')
         ax.text(0.95, 0.05, f'{round(time, 2)} Myr', bbox={'facecolor': 'white', 'edgecolor': 'none', 'alpha': 0.5, 'boxstyle': 'round'}, color='k', ha='right', va='bottom', transform=ax.transAxes)
@@ -104,7 +104,7 @@ class TerminalPlot:
         cax = div.append_axes('right', size='5%', pad=0)
         fig.colorbar(im, cax=cax, label=cbarLabel)
         
-        fig.subplots_adjust(left=0.15, bottom=0.175, right=0.8, top=0.825, wspace=0, hspace=0)
+        fig.subplots_adjust(left=0.07, bottom=0.1, right=0.9, top=0.93, wspace=0, hspace=0)
         figname = f'density_{self.file[5:8]}.png'
         fig.savefig(f'{self.savepath}/{figname}')
         if self.imgcatoff == False:
@@ -121,7 +121,7 @@ class TerminalPlot:
         temp, time, boxMin, boxMax = temperature_frame(file=self.file, bins=bins, axis=axis, cut=cut, column=column, box=box)
 
         # Plot:
-        fig, ax = plt.subplots(figsize=(6, 6))
+        fig, ax = plt.subplots(figsize=(7, 6))
         im = ax.imshow(np.log10(temp), vmin=self.vmin, vmax=self.vmax, extent=(boxMin, boxMax, boxMin, boxMax), 
                        origin='lower', cmap='hot')
         ax.text(0.95, 0.05, f'{round(time, 2)} Myr', bbox={'facecolor': 'white', 'edgecolor': 'none', 'alpha': 0.5, 'boxstyle': 'round'}, color='k', ha='right', va='bottom', transform=ax.transAxes)
@@ -134,7 +134,7 @@ class TerminalPlot:
         cax = div.append_axes('right', size='5%', pad=0)
         fig.colorbar(im, cax=cax, label=r'$\log_{10}(T \ [\mathrm{K}])$')
         
-        fig.subplots_adjust(left=0.15, bottom=0.15, right=0.85, top=0.85, wspace=0, hspace=0)
+        fig.subplots_adjust(left=0.07, bottom=0.1, right=0.9, top=0.93, wspace=0, hspace=0)
         figname = f'temperature_{self.file[5:8]}.png'
         fig.savefig(f'{self.savepath}/{figname}')
         imgcat(fig)
@@ -292,7 +292,7 @@ class TerminalPlot:
         # Plot:
         bone = mpl.colormaps['bone']
 
-        fig, ax = plt.subplots(figsize=(6, 6))
+        fig, ax = plt.subplots(figsize=(7, 6))
         im = ax.imshow(H, origin='lower', extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]], vmin=self.vmin, vmax=self.vmax, cmap='bone')
         ax.text(0.95, 0.05, f'{round(time, 2)} Myr', bbox={'facecolor': 'white', 'edgecolor': 'none', 'alpha': 0.5, 'boxstyle': 'round'}, color='k', ha='right', va='bottom', transform=ax.transAxes)
         ax.set_facecolor(bone(0))
@@ -305,7 +305,7 @@ class TerminalPlot:
         cax = div.append_axes('right', size='5%', pad=0)
         fig.colorbar(im, cax=cax, label=r'$\log_{10}$($\Sigma_\star$ [M$_\odot$ kpc$^{-2}$])')
 
-        fig.subplots_adjust(left=0.15, bottom=0.175, right=0.8, top=0.825, wspace=0, hspace=0)
+        fig.subplots_adjust(left=0.07, bottom=0.1, right=0.9, top=0.93, wspace=0, hspace=0)
         figname = f'stellar_{self.file[5:8]}.png'
         fig.savefig(f'{self.savepath}/{figname}')
         if self.imgcatoff == False:
