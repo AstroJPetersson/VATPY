@@ -105,7 +105,7 @@ class TerminalPlot:
         fig.colorbar(im, cax=cax, label=cbarLabel)
         
         fig.subplots_adjust(left=0.07, bottom=0.1, right=0.9, top=0.93, wspace=0, hspace=0)
-        figname = f'density_{self.file[5:8]}.png'
+        figname = f'density_{self.file[-8:-5]}.png'
         fig.savefig(f'{self.savepath}/{figname}')
         if self.imgcatoff == False:
             imgcat(fig, width=self.imgcatw, height=self.imgcath)
@@ -135,7 +135,7 @@ class TerminalPlot:
         fig.colorbar(im, cax=cax, label=r'$\log_{10}(T \ [\mathrm{K}])$')
         
         fig.subplots_adjust(left=0.07, bottom=0.1, right=0.9, top=0.93, wspace=0, hspace=0)
-        figname = f'temperature_{self.file[5:8]}.png'
+        figname = f'temperature_{self.file[-8:-5]}.png'
         fig.savefig(f'{self.savepath}/{figname}')
         imgcat(fig)
 
@@ -174,7 +174,7 @@ class TerminalPlot:
         fig.colorbar(im, cax=cax, label='$\log_{10}(M \ [\mathrm{M}_\odot])$')
         fig.tight_layout()
 
-        figname = f'phase_{self.file[5:8]}.png'
+        figname = f'phase_{self.file[-8:-5]}.png'
         fig.savefig(f'{self.savepath}/{figname}')
         imgcat(fig)
 
@@ -247,7 +247,7 @@ class TerminalPlot:
         labelLines(ax[0].get_lines(), xvals=[xval, xval], ha='right', fontsize=14)
 
         fig.subplots_adjust(left=0.1, bottom=0.1, right=0.9, top=0.9, wspace=0, hspace=0.05)
-        figname = f'resolution_{self.file[5:8]}.png'
+        figname = f'resolution_{self.file[-8:-5]}.png'
         fig.savefig(f'{self.savepath}/{figname}')
         imgcat(fig)
         
@@ -306,7 +306,7 @@ class TerminalPlot:
         fig.colorbar(im, cax=cax, label=r'$\log_{10}$($\Sigma_\star$ [M$_\odot$ kpc$^{-2}$])')
 
         fig.subplots_adjust(left=0.07, bottom=0.1, right=0.9, top=0.93, wspace=0, hspace=0)
-        figname = f'stellar_{self.file[5:8]}.png'
+        figname = f'stellar_{self.file[-8:-5]}.png'
         fig.savefig(f'{self.savepath}/{figname}')
         if self.imgcatoff == False:
             imgcat(fig, width=self.imgcatw, height=self.imgcath)
