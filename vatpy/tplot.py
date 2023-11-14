@@ -116,7 +116,7 @@ class TerminalPlot:
         interpDens = interpolate_to_2d(pos=pos, unit=self.kpc, values=dens, bins=bins, xrange=xrange, yrange=yrange, zrange=zrange, cut=cut)
 
         # Plot:
-        fig, ax = plt.subplots(figsize=(6, 5), layout='constrained')
+        fig, ax = plt.subplots(figsize=(8, 5), layout='constrained')
         im = ax.imshow(np.log10(interpDens), vmin=self.vmin, vmax=self.vmax, extent=(xrange[0], xrange[1], yrange[0], yrange[1]), 
                        origin='lower', cmap='inferno')
         ax.text(0.95, 0.05, f'{round(time, 2)} Myr', bbox={'facecolor': 'white', 'edgecolor': 'none', 'alpha': 0.5, 'boxstyle': 'round'}, 
@@ -203,7 +203,7 @@ class TerminalPlot:
         interpTemp = np.sum(interpTemp * interpDens, axis=2) / np.sum(interpDens, axis=2)
         
         # Plot:
-        fig, ax = plt.subplots(figsize=(6, 5), layout='constrained')
+        fig, ax = plt.subplots(figsize=(8, 5), layout='constrained')
         im = ax.imshow(np.log10(interpTemp), vmin=self.vmin, vmax=self.vmax, extent=(xrange[0], xrange[1], yrange[0], yrange[1]), 
                        origin='lower', cmap='afmhot')
         ax.text(0.95, 0.05, f'{round(time, 2)} Myr', bbox={'facecolor': 'white', 'edgecolor': 'none', 'alpha': 0.5, 'boxstyle': 'round'}, 
@@ -270,7 +270,7 @@ class TerminalPlot:
             H = np.log10(H.T / (dx * dy))
     
         # Plot:
-        fig, ax = plt.subplots(figsize=(6, 4), layout='constrained')
+        fig, ax = plt.subplots(figsize=(8, 4), layout='constrained')
         im = ax.imshow(H, origin='lower', extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]], 
                        vmin=self.vmin, vmax=self.vmax, cmap='bone')
         ax.text(0.95, 0.05, f'{round(time, 2)} Myr', bbox={'facecolor': 'white', 'edgecolor': 
@@ -332,7 +332,7 @@ class TerminalPlot:
             H = np.log10(H.T / (dx * dy))
     
         # Plot:
-        fig, ax = plt.subplots(figsize=(6, 4), layout='constrained')
+        fig, ax = plt.subplots(figsize=(8, 4), layout='constrained')
         im = ax.imshow(H, origin='lower', extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]], 
                        vmin=self.vmin, vmax=self.vmax, cmap='magma')
         ax.text(0.95, 0.05, f'{round(time, 2)} Myr', bbox={'facecolor': 'white', 'edgecolor': 
@@ -393,7 +393,7 @@ class TerminalPlot:
             H = np.log10(H.T/(dx * dy) / 10)
 
         # Plot:
-        fig, ax = plt.subplots(figsize=(6, 4), layout='constrained')
+        fig, ax = plt.subplots(figsize=(8, 4), layout='constrained')
         im_gas = ax.imshow(np.log10(interpDens), vmin=self.vmin, vmax=self.vmax, extent=(xrange[0], xrange[1], yrange[0], yrange[1]), 
                        origin='lower', cmap='Greys')
         ax.text(0.95, 0.05, f'{round(time, 2)} Myr', bbox={'facecolor': 'white', 'edgecolor': 'none', 'alpha': 0.5, 'boxstyle': 'round'}, 

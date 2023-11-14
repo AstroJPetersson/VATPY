@@ -1,4 +1,10 @@
-#!/home/users/j/jpeterss/anaconda3/bin/python
+#!//home/jpeterss/venvs/jpeterss/bin/python
+
+
+# -------------- Config
+homedir  = '/home/jpeterss'
+mplstyle = 'tplot_base'
+
 
 # -------------- Required Packages
 import numpy as np
@@ -13,8 +19,10 @@ from scipy.interpolate import griddata
 from scipy.ndimage import gaussian_filter
 from imgcat import imgcat
 
+
 # -------------- Import TerminalPlot
 from vatpy import TerminalPlot
+
 
 # -------------- Arguments
 # Initialize argparse:
@@ -22,8 +30,10 @@ parser = argparse.ArgumentParser(description='VATPY Terminal Plot Script', usage
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
 parser._actions[0].help='Show this help message and exit'
 
+
 # Positional arguments:
 parser.add_argument('snapshot', help='Snapshot to analyse')
+
 
 # Optional arguments:
 parser.add_argument('-vmin', '--vmin', action='store', default=None, type=float, help='Colorbar vmin value')
@@ -34,7 +44,7 @@ parser.add_argument('-bins', '--numberofbins', action='store', default=100, type
 parser.add_argument('-levels', '--numberoflevels', action='store', default=5, type=int, help='Number of levels')
 parser.add_argument('-savepath', '--savepath', action='store', default=os.getcwd(), help='Path to save at')
 parser.add_argument('-saveformat', '--saveformat', action='store', default=None, help='Format to save in')
-parser.add_argument('-style', '--mplstyle', action='store', default='/home/users/j/jpeterss/VATPY/mpl/tplot.mplstyle', 
+parser.add_argument('-style', '--mplstyle', action='store', default=f'{homedir}/VATPY/mpl/{mplstyle}.mplstyle', 
                     help='Matplotlib style option')
 parser.add_argument('-interactive', '--interactive', action='store_true', default=False, 
                     help="Interactive plot instead of imgcat")
@@ -56,11 +66,6 @@ parser.add_argument('-stellar', '--stellar', action='store_true', help='Stellar 
 parser.add_argument('-dm', '--darkmatter', action='store_true', help='Dark matter density map')
 parser.add_argument('-sf', '--starformation', action='store_true', help='Star formation surface density map')
 parser.add_argument('-movie', '--movie', action='store_true', help='Create a movie')
-
-
-parser.add_argument('-use_num_dens', '--use_number_densities', action='store_true', default=False, 
-                    help='Use number densities instead of mass densities')
-
 
 
 # Read arguments from the command line:
@@ -105,5 +110,8 @@ if args.movie:
     v.movie()
 
 print('  * Run completed\n')
+
+
+# -------------- End of file
 
 
