@@ -1,9 +1,9 @@
-#!//home/jpeterss/venvs/jpeterss/bin/python
+#!/home/users/j/jpeterss/anaconda3/bin/python
 
 
 # -------------- Config
-homedir  = '/home/jpeterss'
-mplstyle = 'tplot_base'
+homedir  = '/home/users/j/jpeterss'
+mplstyle = 'tplot_ver1'
 
 
 # -------------- Required Packages

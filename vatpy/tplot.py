@@ -118,7 +118,7 @@ class TerminalPlot:
         # Plot:
         fig, ax = plt.subplots(figsize=(8, 5), layout='constrained')
         im = ax.imshow(np.log10(interpDens), vmin=self.vmin, vmax=self.vmax, extent=(xrange[0], xrange[1], yrange[0], yrange[1]), 
-                       origin='lower', cmap='inferno')
+                       origin='lower', cmap='cubehelix')
         ax.text(0.95, 0.05, f'{round(time, 2)} Myr', bbox={'facecolor': 'white', 'edgecolor': 'none', 'alpha': 0.5, 'boxstyle': 'round'}, 
                 color='k', ha='right', va='bottom', transform=ax.transAxes)
         ax.set_aspect('equal')
