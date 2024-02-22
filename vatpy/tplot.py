@@ -8,7 +8,6 @@ Last updated: 2023-09-27
 # -------------- Required packages
 import numpy as np
 import matplotlib as mpl
-mpl.use("tkagg")
 import matplotlib.pyplot as plt
 import argparse
 import h5py
