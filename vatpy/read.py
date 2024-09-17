@@ -9,7 +9,6 @@ import numpy as np
 import h5py
 import pycstruct
 
-
 # -------------- Function(s)
 def read_hdf5(file):
     # Read hdf5-file:
@@ -36,7 +35,6 @@ def read_hdf5(file):
     }
 
     return h, iu
-
 
 def read_dump(file, feedback=False, spin=False, bh=False, hm=False, rcirc=False):
     f = open(file, 'rb')
@@ -109,7 +107,6 @@ def read_dump(file, feedback=False, spin=False, bh=False, hm=False, rcirc=False)
     f.close()
     
     return time, NSinksAllTasks, sinks
-
 
 # -------------- End of file
 

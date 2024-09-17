@@ -4,10 +4,10 @@ Description: Functions to get various gas properties, e.g. number densities & te
 Last updated: 2023-09-27
 '''
 
+# -------------- Required packages
 import numpy as np
 
-
-# -------------- Function(s)
+# -------------- Declare function(s)
 def number_density(h, iu):
     # Constants:
     mp   = 1.6726e-24    #[g]
@@ -21,10 +21,10 @@ def number_density(h, iu):
 
     # Number densities from chemical abundances:
     xHe = 0.1
-    mu = (1 + 4 * xHe)
-    nH = rho / (mu * mp)
+    mu  = (1 + 4 * xHe)
+    nH  = rho / (mu * mp)
 
-    numDens = {
+    num = {
         'HII' : xHII * nH, 
         'H2'  : xH2 * nH,
         'HI'  : (1 - xHII - 2*xH2) * nH,
@@ -34,10 +34,9 @@ def number_density(h, iu):
     }
     
     # Total number density:
-    numDens['n'] = np.sum(np.array(list(numDens.values())), axis=0)
+    num['n'] = np.sum(np.array(list(num.values())), axis=0)
 
-    return numDens
-
+    return num
 
 def temperature(h, iu):
     mp   = 1.6726e-24    #[g]
@@ -45,11 +44,11 @@ def temperature(h, iu):
     
     if 'ChemicalAbundances' in h['PartType0'].keys():
         # Convert mass densities into number densities:
-        numDens = number_density(h, iu)
+        num = number_density(h, iu)
 
         # Estimate the temperature of each gas cell:
         interg = h['PartType0']['InternalEnergy'] * iu['uinterg']
-        mu     = (numDens['HII'] * 1 + numDens['HI'] * 1 + numDens['H2'] * 2 + numDens['He'] * 4 + numDens['CO'] * 14) / numDens['n']
+        mu     = (num['HII'] * 1 + num['HI'] * 1 + num['H2'] * 2 + num['He'] * 4 + num['CO'] * 14) / num['n']
         temp   = (2 * mu * mp * interg) / (3 * kb)
     else:
         xHe = 0.1
@@ -58,7 +57,6 @@ def temperature(h, iu):
         temp   = (2 * mu * mp * interg) / (3 * kb)
 
     return temp
-
 
 # -------------- End of file
 

@@ -1,20 +1,27 @@
 # -------------- Import necessary packages
 import os
+import numpy as np
 import tkinter as tk
+import threading
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,  
 NavigationToolbar2Tk)
 from PIL import Image, ImageTk
 
 # -------------- Import GUI specific functions
-from vatpy import get_gas_density_image
+from vatpy import get_gas_density_image, get_gas_temperature_image
 
 # -------------- Configuration
 import config
 homedir = config.homedir
 
 # -------------- Define functions
+def thread_func():
+    th = threading.Thread(target=generate_image) 
+    th.start() 
+
 def generate_image():
+    # Get parameters:
     snap_var      = snap.get()
     ulength_var   = float(ulength.get())
     if xrange.get():
@@ -40,15 +47,27 @@ def generate_image():
         zrange_var = None
     bins_var      = int(bins.get())
     phys_prop_var = phys_prop.get()
+    if vmin.get():
+        vmin_var = float(vmin.get())
+    else:
+        vmin_var = None
+    if vmax.get():
+        vmax_var = float(vmax.get())
+    else:
+        vmax_var = None
     
+    # Enable textbox:
+    textbox.config(state=tk.NORMAL)
+    
+    # Check if file exists:
     snap_nr = '000'[len(str(snap_var)):] + str(snap_var)
     file = f'{os.getcwd()}/snap_{snap_nr}.hdf5'
-
-    vmin_var = None
-    vmax_var = None
-
-    textbox.config(state=tk.NORMAL)
-
+    if not os.path.isfile(file):
+        textbox.insert(tk.END, f'> Error! No file with the name {file} detected!\n')
+        textbox.config(state=tk.DISABLED)
+        return 0
+        
+    # Gas density image:
     if phys_prop_var == 'gas_density':
         # Make sure axis is clean:
         textbox.insert(tk.END, '> Cleaning & preparing canvas for image output...')
@@ -70,22 +89,107 @@ def generate_image():
         cax = ax.inset_axes([1, 0, 0.05, 1])
         fig.colorbar(im, cax=cax, label='$\log_{10}(\Sigma_\mathrm{Gas} \ [\mathrm{g} \ \mathrm{cm}^{-2}])$')
         textbox.insert(tk.END, ' Done!\n')
+        
+    # Gas temperature image:
+    elif phys_prop_var == 'gas_temperature':
+        # Make sure axis is clean:
+        textbox.insert(tk.END, '> Cleaning & preparing canvas for image output...')
+        ax.cla()
+        textbox.insert(tk.END, ' Done!\n')
 
-
-    canvas.draw()
-    toolbar.update()
+        # Get the data for the image:
+        textbox.insert(tk.END, '> Generating gas temperature map...')
+        H, X, Y = get_gas_temperature_image(file=file, bins=bins_var, xrange=xrange_var, yrange=yrange_var, 
+                                            zrange=zrange_var, ulength=ulength_var)
+        textbox.insert(tk.END, ' Done!\n')
+        
+        # Plot:
+        textbox.insert(tk.END, '> Now do some plotting...')
+        im = ax.imshow(H, extent=(X[0], X[-1], Y[0], Y[-1]), origin='lower', vmin=vmin_var, vmax=vmax_var, 
+                       cmap='afmhot')
+        ax.set_xlabel('$x$ [i.u.]')
+        ax.set_ylabel('$y$ [i.u.]')
+        cax = ax.inset_axes([1, 0, 0.05, 1])
+        fig.colorbar(im, cax=cax, label='$\log_{10}(T \ [\mathrm{K}])$')
+        textbox.insert(tk.END, ' Done!\n')
     
+    # Error message:
+    else:
+        textbox.insert(tk.END, ' Error!\n> Something went wrong in the selection of physical property... please debug!')
+
+    # Update the canvas & toolbar:
+    canvas.draw()
     canvas.get_tk_widget().grid(row=0, column=3, padx=10, pady=10, rowspan=14, sticky=tk.EW)
+    
+    toolbar.update()
     toolbar.grid(row=14, column=3, rowspan=3)
     
+    # Final textbox message:
     textbox.insert(tk.END, '> Image successfully generated!\n')
     textbox.config(state=tk.DISABLED)
-    
-    return None
+    textbox.see('end')
+
+    return 1
+
 
 def apply_image():
+    # Get parameters:
+    phys_prop_var = phys_prop.get()
+    if vmin.get():
+        vmin_var = float(vmin.get())
+    else:
+        vmin_var = None
+    if vmax.get():
+        vmax_var = float(vmax.get())
+    else:
+        vmax_var = None
 
-    return None
+    # Enable textbox:
+    textbox.config(state=tk.NORMAL)
+    
+    # Retrive axis data:
+    H = ax.get_images()[0]
+    H = H.get_array()
+    X = ax.get_xlim()
+    Y = ax.get_ylim()
+
+    # Decide which colormap & label to use:
+    if phys_prop_var == 'gas_density':
+        label = '$\log_{10}(\Sigma_\mathrm{Gas} \ [\mathrm{g} \ \mathrm{cm}^{-2}])$'
+        cmap  = 'magma'
+    elif phys_prop_var == 'gas_temperature':
+        label = '$\log_{10}(T \ [\mathrm{K}])$'
+        cmap = 'afmhot'
+    else:
+        textbox.insert(tk.END, ' Error!\n> Something went wrong in the selection of physical property... please debug!')
+
+    # Make sure axis is clean:
+    textbox.insert(tk.END, '> Cleaning & preparing canvas for image output...')
+    ax.cla()
+    textbox.insert(tk.END, ' Done!\n')
+
+    # Update axis image with vmin/vmax:
+    textbox.insert(tk.END, '> Updating with newest vmin & vmax values...')
+    im = ax.imshow(H, extent=(X[0], X[-1], Y[0], Y[-1]), origin='lower', vmin=vmin_var, vmax=vmax_var, cmap=cmap)
+    ax.set_xlabel('$x$ [i.u.]')
+    ax.set_ylabel('$y$ [i.u.]')
+    cax = ax.inset_axes([1, 0, 0.05, 1])
+    fig.colorbar(im, cax=cax, label=label)
+    textbox.insert(tk.END, ' Done!\n')
+
+    # Update the canvas & toolbar:
+    canvas.draw()
+    canvas.get_tk_widget().grid(row=0, column=3, padx=10, pady=10, rowspan=14, sticky=tk.EW)
+    
+    toolbar.update()
+    toolbar.grid(row=14, column=3, rowspan=3)
+    
+    # Final textbox message:
+    textbox.insert(tk.END, '> Image successfully updated!\n')
+    textbox.config(state=tk.DISABLED)
+    textbox.see('end')
+
+    return 1
 
 # -------------- Run a GUI via tkinter
 # Window:
@@ -153,7 +257,7 @@ tk.Radiobutton(root, text="pc", font=('Courier', 10), bg='white', borderwidth=0,
                variable=ulength, value='3.08567758e18').grid(row=16, column=1, padx=0, sticky=tk.W)
 
 # Figure object:
-fig, ax = plt.subplots(figsize=(4, 3.6), layout='constrained')
+fig, ax = plt.subplots(figsize=(4, 3.5), layout='constrained')
 ax.set_xticks([])
 ax.set_yticks([])
 ax.set_xlim(0, 1)
@@ -166,17 +270,10 @@ canvas = FigureCanvasTkAgg(fig, master=root)
 canvas.get_tk_widget().grid(row=0, column=3, padx=10, pady=10, rowspan=14, sticky=tk.EW)
 canvas.draw()
 
-# Top right frame:
-#top_right_frame = tk.Frame(root, width=460, height=40, bg='white')
-#top_right_frame.grid(row=0, column=3, padx=10, pady=10, sticky=tk.N)
-
-#output_label = tk.Label(top_right_frame, text='Visualisation Output', font=('Courier', 14), bg='white')
-#output_label.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
-
 # Matplotlib toolbar:
 toolbar = NavigationToolbar2Tk(canvas, root, pack_toolbar=False) 
 
-# Bottom right frame:
+# Textbox:
 bot_right_frame = tk.Frame(root, width=400, height=120)
 bot_right_frame.grid(row=17, column=3, padx=10, pady=10, rowspan=4, sticky=tk.N)
 
@@ -189,7 +286,7 @@ scrollbar.grid(row=0, column=1, sticky=tk.NS)
 textbox['yscrollcommand'] = scrollbar.set
 
 # Generate image:
-tk.Button(root, text='Generate', font=('Courier', 12), command=generate_image).grid(row=17, column=0, padx=10, pady=5, columnspan=2, sticky=tk.EW)
+tk.Button(root, text='Generate', font=('Courier', 12), command=thread_func).grid(row=17, column=0, padx=10, pady=5, columnspan=2, sticky=tk.EW)
 
 # Colorbar vmin/vmax:
 tk.Label(root, text='Colorbar vmin', font=('Courier', 12), bg='white', anchor='w').grid(row=18, column=0, padx=10, sticky=tk.W)
@@ -203,7 +300,7 @@ tk.Entry(root, bd=2, width=10, font=('Courier', 10), textvariable=vmax).grid(row
 # Apply vmin/vmax:
 tk.Button(root, text='Apply', font=('Courier', 12), command=apply_image).grid(row=20, column=0, padx=10, pady=5, columnspan=2, sticky=tk.EW)
 
-
+# End of window:
 root.mainloop()
 
 

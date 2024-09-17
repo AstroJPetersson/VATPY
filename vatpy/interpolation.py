@@ -1,5 +1,5 @@
 '''
-Description: Interpolation of data (e.g. gas physical properties) onto a grid.
+Description: Interpolation of data (e.g. gas physical properties).
 
 Last updated: 2023-09-27
 '''
@@ -8,7 +8,7 @@ Last updated: 2023-09-27
 import numpy as np
 from scipy.interpolate import NearestNDInterpolator
 
-# -------------- Function(s)
+# -------------- Declare function(s)
 def interpolate_to_2d(pos, unit, values, bins, xrange, yrange, zrange, cut=None):
     # Generate the grid:
     X, dX = np.linspace(xrange[0], xrange[1], bins, retstep=True)
