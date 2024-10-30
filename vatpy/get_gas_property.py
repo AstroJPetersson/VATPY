@@ -1,5 +1,6 @@
 '''
-Description: Functions to get various gas properties, e.g. number densities & temperature. 
+Description: Functions to get various gas properties, e.g. number densities 
+             & temperature. 
 
 Last updated: 2023-09-27
 '''
@@ -48,7 +49,8 @@ def temperature(h, iu):
 
         # Estimate the temperature of each gas cell:
         interg = h['PartType0']['InternalEnergy'] * iu['uinterg']
-        mu     = (num['HII'] * 1 + num['HI'] * 1 + num['H2'] * 2 + num['He'] * 4 + num['CO'] * 14) / num['n']
+        mu     = ((num['HII'] * 1 + num['HI'] * 1 + num['H2'] * 2 + num['He'] 
+                   * 4 + num['CO'] * 14) / num['n'])
         temp   = (2 * mu * mp * interg) / (3 * kb)
     else:
         xHe = 0.1

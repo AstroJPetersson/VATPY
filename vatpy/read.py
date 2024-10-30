@@ -11,6 +11,11 @@ import pycstruct
 
 # -------------- Function(s)
 def read_hdf5(file):
+    '''
+    Description: Read a HDF5 file output from AREPO and return the data + 
+                 internal units (in cgs). 
+    '''
+
     # Read hdf5-file:
     h = h5py.File(file, 'r')
 
@@ -36,7 +41,14 @@ def read_hdf5(file):
 
     return h, iu
 
-def read_dump(file, feedback=False, spin=False, bh=False, hm=False, rcirc=False):
+def read_dump(file, feedback=False, spin=False, bh=False, hm=False, 
+              rcirc=False):
+    '''
+    Description: Read a sink particle (binary) file output from AREPO. Please
+                 note that there is high risk of mismatch between data fields
+                 unless you know what the expected data structure is of your 
+                 simulation output.
+    '''
     f = open(file, 'rb')
     
     time = np.fromfile(f, np.float64, 1)
@@ -47,7 +59,8 @@ def read_dump(file, feedback=False, spin=False, bh=False, hm=False, rcirc=False)
               'ID', 'HomeTask', 'Index', 'FormationOrder']
     
     if feedback == True:
-        fields += ['N_sne', 'StellarMass', 'explosion_time', 'MassStillToConvert', 'AccretionTime']
+        fields += ['N_sne', 'StellarMass', 'explosion_time', 
+                   'MassStillToConvert', 'AccretionTime']
 
     if spin == True:
         fields += ['AngularMomentum']
@@ -56,7 +69,9 @@ def read_dump(file, feedback=False, spin=False, bh=False, hm=False, rcirc=False)
         fields += ['BlackHole'] 
         if hm == True:
             fields += ['BlackHoleHotMode']
-        fields += ['BlackHoleAccRadius', 'BlackHoleMass', 'BlackHoleDiskMass', 'BlackHoleReservoir', 'BlackHoleSinkAccRate', 'CellsTotalMassBuffer']
+        fields += ['BlackHoleAccRadius', 'BlackHoleMass', 'BlackHoleDiskMass', 
+                   'BlackHoleReservoir', 'BlackHoleSinkAccRate', 
+                   'CellsTotalMassBuffer']
         if rcirc == True:
             fields += ['BlackHoleCircRadius']
     
