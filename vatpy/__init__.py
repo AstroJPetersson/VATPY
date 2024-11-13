@@ -9,4 +9,5 @@ from .get_gui_image import get_gas_density_image
 from .get_gui_image import get_gas_temperature_image
 from .get_cli_image import get_gas_density_image_cli
 from .get_cli_image import get_gas_temperature_image_cli
+from .get_black_hole_data import get_black_hole_data
 

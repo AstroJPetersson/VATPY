@@ -51,6 +51,10 @@ parser.add_argument('-sa', '--stellarage', action='store_true',
                     help='''
                     Generate a star particle stellar age map
                     ''')
+parser.add_argument('-bhevol', '--blackholeevolution', action='store_true',
+                    help='''
+                    Time evolution of the black hole sink particle properties
+                    ''')
 
 parser.add_argument('-interpolation', '--interpolation', action='store',
                     default='kdtree', type=str,
@@ -73,6 +77,11 @@ parser.add_argument('-sfb', '--starformationbins', action='store', default=100,
                     type=int, help='''
                     Number of bins in x/y when calculating the star formation
                     rate surface density (default: 100)
+                    ''')
+parser.add_argument('-vcr', '--variablecircradius', action='store_true', 
+                    default=False, help='''
+                    Whether the flags for a variable circularisation radius is
+                    on or not
                     ''')
 
 parser.add_argument('-qty', '--quantity', action='store', default='mass',
@@ -183,6 +192,11 @@ if args.stellarage:
                   age=args.maxstellarage, blackholefocus=args.blackholefocus, 
                   xrange=args.xrange, yrange=args.yrange, zrange=args.zrange, 
                   box=args.box, cut=args.cut)
+
+if args.blackholeevolution:
+    print('  * Generating a time evolution plot of the black hole sink'
+          + ' particle properties')
+    v.black_hole_evolution(vcr=args.variablecircradius)
 
 print('  * Run completed\n')
 

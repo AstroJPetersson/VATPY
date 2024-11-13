@@ -19,7 +19,7 @@ from .read import read_hdf5
 from .get_gas_property import number_density
 from .get_gas_property import temperature
 from .interpolation import interpolate_to_2d, interpolate_to_2d_kdtree
-
+from .get_black_hole_data import get_black_hole_data
 
 # -------------- TerminalPlot
 class TerminalPlot:
@@ -44,6 +44,7 @@ class TerminalPlot:
 
         # Constants:
         self.G = 6.67259e-8  # [cm^3 g^-1 s^-2]
+        self.c = 2.998e10  # [cm s^-1]
         self.mp = 1.6726e-24  # [g]
         self.kb = 1.380658e-16  # [erg K^-1]
         self.Msol = 1.9891e33  # [g]
@@ -776,5 +777,138 @@ class TerminalPlot:
 
         return None
 
+    ##########################################################################
+    ##########################################################################
+    def black_hole_evolution(self, vcr):
+        # Snapshot range:
+        n = 0
+        N = int(self.file[len(self.file)-8:-5])
+
+        # Obtain the black hole data:
+        BHData = get_black_hole_data(output_dir=os.getcwd(), n=n, N=N, 
+                                     vcr=vcr)
+        
+        # Collection of plots:
+        ls = '-'
+        lw = 2
+        c = 'tab:blue'
+        fs = 14
+
+        fig, ax = plt.subplots(2, 5, figsize=(14, 5.5), sharex=True, 
+                               layout='constrained')
+
+        # Sink mass:
+        ax[0,0].plot(BHData['Time'], np.log10(BHData['MassSink']), 
+                     ls=ls, lw=lw, c=c)
+        ax[0,0].set_title('$\log_{10}(M_\mathrm{Sink} \ [\mathrm{M}_\odot])$', 
+                          fontsize=fs)
+        ax[0,0].set_xlim(0, np.max(BHData['Time']))
+        ax[0,0].grid()
+
+        # BH growth:
+        ax[0,1].plot(BHData['Time'], np.log10(BHData['MassBH']), 
+                     ls=ls, lw=lw, c=c)
+        ax[0,1].set_title('$\log_{10}(M_\mathrm{BH} \ [\mathrm{M}_\odot])$', 
+                          fontsize=fs)
+        ax[0,1].grid()
+
+        # Gas reservoir:
+        GasReserv = np.array(BHData['MassReserv'])
+        GasReserv[GasReserv <= 0] = 1e-99
+        ax[0,2].plot(BHData['Time'], np.log10(GasReserv), ls=ls, lw=lw, c=c)
+        ax[0,2].set_title('$\log_{10}(M_\mathrm{Reserv} \ [\mathrm{M}_\odot])$', fontsize=fs)
+        ax[0,2].set_ylim(-9, 5)
+        ax[0,2].grid()
+
+        # Gas accretion disk:
+        AccDisk = np.array(BHData['MassDisk'])
+        AccDisk[AccDisk <= 0] = 1e-99
+        ax[0,3].plot(BHData['Time'], np.log10(AccDisk), ls=ls, lw=lw, c=c)
+        ax[0,3].set_title('$\log_{10}(M_\mathrm{Disk} \ [\mathrm{M}_\odot])$', fontsize=fs)
+        ax[0,3].set_ylim(-9, 5)
+        ax[0,3].grid()
+
+        # Relative error:
+        mass_diff = ((np.array(BHData['MassSink']) 
+                      - np.array(BHData['MassReserv']) 
+                      - np.array(BHData['MassDisk']) 
+                      - np.array(BHData['MassBH'])) 
+                     / np.array(BHData['MassSink']))
+        ax[0,4].plot(BHData['Time'], mass_diff, lw=lw, c=c)
+        ax[0,4].set_title('Relative Error', fontsize=fs)
+        ax[0,4].set_yscale('linear')
+        ax[0,4].grid()
+        
+        # Sink accretion rate:
+        FracEddSink = np.array(BHData['MdotSink'])/np.array(BHData['MdotEdd'])
+        FracEddSink[FracEddSink <= 0] = 1e-99
+        ax[1,0].stairs(np.log10(FracEddSink), BHData['Time'], baseline=-99, 
+                       lw=lw, color=c, alpha=0.8, fill=True, rasterized=True)
+        ax[1,0].axhline(0, c='k', ls=':', lw=1, zorder=9)
+        ax[1,0].axhline(np.log10(0.02), c='k', ls='--', lw=1, zorder=9)
+        ax[1,0].set_xlabel('Time [Myr]')
+        ax[1,0].set_title('$\log_{10}(\dot{M}_\mathrm{Sink}/\dot{M}_\mathrm{Edd})$', fontsize=fs)
+        ax[1,0].set_ylim(-9, 1)
+        ax[1,0].grid()
+
+        MdotSink = np.array(BHData['MdotSink'])
+        MdotSink[MdotSink <= 0] = 1e-99
+        ax[1,1].stairs(np.log10(MdotSink), BHData['Time'], baseline=-99, 
+                       lw=lw, color=c, alpha=0.8, fill=True, rasterized=True)
+        ax[1,1].set_xlabel('Time [Myr]')
+        ax[1,1].set_title('$\log_{10}(\dot{M}_\mathrm{Sink} \ [\mathrm{M}_\odot \ \mathrm{yr}^{-1}])$', fontsize=fs)
+        ax[1,1].set_ylim(-9, -3)
+        ax[1,1].grid()
+
+        # BH Accretion rate:
+        FracEddBH = np.array(BHData['MdotBH']) / np.array(BHData['MdotEdd'])
+        FracEddBH[FracEddBH <= 0] = 1e-99
+        ax[1,2].plot(BHData['TimeMid'], np.log10(FracEddBH), lw=lw, c=c, 
+                     zorder=10)
+        ax[1,2].axhline(0, c='k', ls=':', lw=1, zorder=9)
+        ax[1,2].axhline(np.log10(0.02), c='k', ls='--', lw=1, zorder=9)
+        ax[1,2].set_xlabel('Time [Myr]')
+        ax[1,2].set_title('$\log_{10}(\dot{M}_\mathrm{BH}/\dot{M}_\mathrm{Edd})$', fontsize=fs)
+        ax[1,2].set_ylim(-9, 1)
+        ax[1,2].grid()
+
+        MdotBH = np.array(BHData['MdotBH'])
+        MdotBH[MdotBH <= 0] = 1e-99
+        ax[1,3].plot(BHData['TimeMid'], np.log10(MdotBH), lw=2, c=c,
+                     zorder=10)
+        ax[1,3].set_xlabel('Time [Myr]')
+        ax[1,3].set_title('$\log_{10}(\dot{M}_\mathrm{BH}$ [M$_\odot$ yr$^{-1}$])', fontsize=fs)
+        ax[1,3].set_ylim(-9, -3)
+        ax[1,3].grid()
+
+        # Circularisation radius:
+        if len(BHData['CircRadius']) > 0:
+            ax[1,4].plot(BHData['Time'], BHData['CircRadius'], lw=lw, c=c)
+            ax[1,4].set_xlabel('Time [Myr]')
+            ax[1,4].set_title('$R_\mathrm{circ}$ [left: pc, right: $r_\mathrm{s}$]', fontsize=fs)
+            ax[1,4].set_yscale('linear')
+            ax[1,4].grid()
+
+            ax2 = ax[1,4].twinx()
+            rs = 2 * self.G * BHData['MassBH'][0] * self.Msol / self.c**2
+            Rcirc = np.array(BHData['CircRadius']) * self.pc / rs
+            ax2.plot(BHData['Time'], Rcirc, lw=lw, c=c)
+            ax2.set_yscale('linear')
+        else:
+            ax[1,4].set_visible(False)
+
+        # Save figure:
+        figname = f'bhevol_{self.file[-8:-5]}.{self.saveformat}'
+        fig.savefig(f'{self.savepath}/{figname}')
+        print('  * Figure generated and saved')
+
+        # Display figure:
+        if self.interactive is not True:
+            imgcat(fig, width=self.width)
+        else:
+            print('  * Interactive display of the figure is now running')
+            plt.show()
+
+        return None
 
 # -------------- End of file

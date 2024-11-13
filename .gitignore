@@ -1,5 +1,6 @@
 config.py
+.DS_Store
 __pycache__
 vatpy/__pycache__
-.DS_Store
-
+.ipynb_checkpoints/*
+vatpy/.ipynb_checkpoints/*
