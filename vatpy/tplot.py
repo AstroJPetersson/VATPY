@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.spatial.transform import Rotation
 from scipy.ndimage import gaussian_filter
+from labellines import labelLine, labelLines
 from imgcat import imgcat
 
 from .read import read_hdf5
@@ -313,6 +314,81 @@ class TerminalPlot:
 
         # Save figure:
         figname = f'temp_{self.file[-8:-5]}.{self.saveformat}'
+        fig.savefig(f'{self.savepath}/{figname}')
+        print('  * Figure generated and saved')
+
+        # Display figure:
+        if self.interactive is not True:
+            imgcat(fig, width=self.width)
+        else:
+            print('  * Interactive display of the figure is now running')
+            plt.show()
+
+        return None
+    
+    ##########################################################################
+    ##########################################################################
+    def resolution(self, bins=100, levels=5, smooth=0):
+        # Reading data:
+        h, iu = read_hdf5(file=self.file)
+        mass = h['PartType0']['Masses'] * iu['umass']
+        dens = h['PartType0']['Density'] * iu['udens']
+        radius = ((3*mass) / (4*np.pi*dens))**(1/3)
+    
+        # 2D Histograms:
+        H0, xedges0, yedges0 = np.histogram2d(np.log10(dens), 
+                                              np.log10(radius / self.pc), bins=bins)
+        H1, xedges1, yedges1 = np.histogram2d(np.log10(dens), 
+                                              np.log10(mass / self.Msol), bins=bins)
+
+        # Gaussian filter:
+        if smooth > 0:
+            H0 = gaussian_filter(H0, sigma=smooth)
+            H1 = gaussian_filter(H1, sigma=smooth)
+    
+        # Log scale:
+        with np.errstate(divide = 'ignore'):
+            H0 = np.log10(H0.T)
+            H1 = np.log10(H1.T)
+
+        # Figure:
+        fig, ax = plt.subplots(2, 1, figsize=(7, 7), sharex=True)
+        fig.subplots_adjust(left=0.15, right=0.85, bottom=0.15, top=0.95, 
+                            wspace=0, hspace=0)
+
+        # Density vs Radius:
+        cf = ax[0].contourf(H0, levels=levels, extent=(xedges0[0], xedges0[-1], 
+                            yedges0[0], yedges0[-1]), origin='lower', 
+                            cmap='viridis')
+        ax[0].set_ylabel('$\log_{10}(r_\mathrm{cell} \ [\mathrm{pc}])$')
+        ax[0].grid()
+        ax[0].set_xlim(self.xlim)
+
+        cax = ax[0].inset_axes([1, -1, 0.05, 2])
+        cb = fig.colorbar(cf, cax=cax, label='$\log_{10}(N_\mathrm{cells})$')
+
+        # Density vs Mass:
+        ax[1].contourf(H1, levels=levels, extent=(xedges1[0], xedges1[-1], 
+                       yedges1[0], yedges1[-1]), origin='lower', cmap='viridis')
+        ax[1].set_ylabel('$\log_{10}(M_\mathrm{cell} \ [\mathrm{M}_\odot])$')
+        ax[1].set_xlabel(r'$\log_{10}(\rho_\mathrm{cell} \ [\mathrm{g} \ \mathrm{cm}^{-3}]$')
+        ax[1].grid()
+
+        # Jeans length:
+        ax[0].autoscale(False)
+        xlim = ax[0].get_xlim()
+        xlim = np.array(xlim)
+
+        mu = (1 + 4 * 0.1)
+        jeans10  = np.sqrt((15 * self.kb * 10) / (4 * np.pi * self.G * mu * self.mp * 10**(xlim)))
+        jeans100 = np.sqrt((15 * self.kb * 100) / (4 * np.pi * self.G * mu * self.mp * 10**(xlim)))
+
+        ax[0].plot(xlim, np.log10(jeans10 / self.pc), c='k', ls='--', lw=1, alpha=0.8, label='$\Lambda_J$($T=10$ K)')
+        ax[0].plot(xlim, np.log10(jeans100 / self.pc), c='k', ls='--', lw=1, alpha=0.8, label='$\Lambda_J$($T=100$ K)')
+        labelLines(ax[0].get_lines(), xvals=[-24, -24], ha='center', fontsize=14)
+
+        # Save figure:
+        figname = f'res_{self.file[-8:-5]}.{self.saveformat}'
         fig.savefig(f'{self.savepath}/{figname}')
         print('  * Figure generated and saved')
 
@@ -781,7 +857,11 @@ class TerminalPlot:
     ##########################################################################
     def black_hole_evolution(self, vcr):
         # Snapshot range:
-        n = 0
+        file_list = os.listdir()
+        snap_list = [i for i in file_list if 'snap_' in i]
+        snap_list = [i for i in snap_list if not 'sink_' in i]
+        snum_list = [int(i[5:-5]) for i in snap_list]
+        n = np.min(snum_list)
         N = int(self.file[len(self.file)-8:-5])
 
         # Obtain the black hole data:
@@ -816,7 +896,8 @@ class TerminalPlot:
         GasReserv = np.array(BHData['MassReserv'])
         GasReserv[GasReserv <= 0] = 1e-99
         ax[0,2].plot(BHData['Time'], np.log10(GasReserv), ls=ls, lw=lw, c=c)
-        ax[0,2].set_title('$\log_{10}(M_\mathrm{Reserv} \ [\mathrm{M}_\odot])$', fontsize=fs)
+        ax[0,2].set_title('$\log_{10}(M_\mathrm{Reserv} \ [\mathrm{M}_\odot])$', 
+                          fontsize=fs)
         ax[0,2].set_ylim(-9, 5)
         ax[0,2].grid()
 
@@ -824,7 +905,8 @@ class TerminalPlot:
         AccDisk = np.array(BHData['MassDisk'])
         AccDisk[AccDisk <= 0] = 1e-99
         ax[0,3].plot(BHData['Time'], np.log10(AccDisk), ls=ls, lw=lw, c=c)
-        ax[0,3].set_title('$\log_{10}(M_\mathrm{Disk} \ [\mathrm{M}_\odot])$', fontsize=fs)
+        ax[0,3].set_title('$\log_{10}(M_\mathrm{Disk} \ [\mathrm{M}_\odot])$', 
+                          fontsize=fs)
         ax[0,3].set_ylim(-9, 5)
         ax[0,3].grid()
 
@@ -847,7 +929,8 @@ class TerminalPlot:
         ax[1,0].axhline(0, c='k', ls=':', lw=1, zorder=9)
         ax[1,0].axhline(np.log10(0.02), c='k', ls='--', lw=1, zorder=9)
         ax[1,0].set_xlabel('Time [Myr]')
-        ax[1,0].set_title('$\log_{10}(\dot{M}_\mathrm{Sink}/\dot{M}_\mathrm{Edd})$', fontsize=fs)
+        ax[1,0].set_title('$\log_{10}(\dot{M}_\mathrm{Sink}/\dot{M}_\mathrm{Edd})$', 
+                          fontsize=fs)
         ax[1,0].set_ylim(-9, 1)
         ax[1,0].grid()
 
@@ -856,7 +939,8 @@ class TerminalPlot:
         ax[1,1].stairs(np.log10(MdotSink), BHData['Time'], baseline=-99, 
                        lw=lw, color=c, alpha=0.8, fill=True, rasterized=True)
         ax[1,1].set_xlabel('Time [Myr]')
-        ax[1,1].set_title('$\log_{10}(\dot{M}_\mathrm{Sink} \ [\mathrm{M}_\odot \ \mathrm{yr}^{-1}])$', fontsize=fs)
+        ax[1,1].set_title('$\log_{10}(\dot{M}_\mathrm{Sink} \ [\mathrm{M}_\odot \ \mathrm{yr}^{-1}])$', 
+                          fontsize=fs)
         ax[1,1].set_ylim(-9, -3)
         ax[1,1].grid()
 
@@ -868,7 +952,8 @@ class TerminalPlot:
         ax[1,2].axhline(0, c='k', ls=':', lw=1, zorder=9)
         ax[1,2].axhline(np.log10(0.02), c='k', ls='--', lw=1, zorder=9)
         ax[1,2].set_xlabel('Time [Myr]')
-        ax[1,2].set_title('$\log_{10}(\dot{M}_\mathrm{BH}/\dot{M}_\mathrm{Edd})$', fontsize=fs)
+        ax[1,2].set_title('$\log_{10}(\dot{M}_\mathrm{BH}/\dot{M}_\mathrm{Edd})$', 
+                          fontsize=fs)
         ax[1,2].set_ylim(-9, 1)
         ax[1,2].grid()
 
@@ -877,7 +962,8 @@ class TerminalPlot:
         ax[1,3].plot(BHData['TimeMid'], np.log10(MdotBH), lw=2, c=c,
                      zorder=10)
         ax[1,3].set_xlabel('Time [Myr]')
-        ax[1,3].set_title('$\log_{10}(\dot{M}_\mathrm{BH}$ [M$_\odot$ yr$^{-1}$])', fontsize=fs)
+        ax[1,3].set_title('$\log_{10}(\dot{M}_\mathrm{BH}$ [M$_\odot$ yr$^{-1}$])', 
+                          fontsize=fs)
         ax[1,3].set_ylim(-9, -3)
         ax[1,3].grid()
 
@@ -885,7 +971,8 @@ class TerminalPlot:
         if len(BHData['CircRadius']) > 0:
             ax[1,4].plot(BHData['Time'], BHData['CircRadius'], lw=lw, c=c)
             ax[1,4].set_xlabel('Time [Myr]')
-            ax[1,4].set_title('$R_\mathrm{circ}$ [left: pc, right: $r_\mathrm{s}$]', fontsize=fs)
+            ax[1,4].set_title('$R_\mathrm{circ}$ [left: pc, right: $r_\mathrm{s}$]', 
+                              fontsize=fs)
             ax[1,4].set_yscale('linear')
             ax[1,4].grid()
 

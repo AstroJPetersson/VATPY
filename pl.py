@@ -35,6 +35,10 @@ parser.add_argument('-temp', '--temperature', action='store_true',
                     help='''
                     Generate a gas column temperature map
                     ''')
+parser.add_argument('-res', '--resolution', action='store_true',
+                    help='''
+                    Generate a gas resolution plot
+                    ''')
 parser.add_argument('-stellar', '--stellar', action='store_true',
                     help='''
                     Generate a stellar surface density map
@@ -73,11 +77,15 @@ parser.add_argument('-box', '--box', action='store', default=None, nargs=2,
                     help='Interpolation box (default: 0 to boxsize)')
 parser.add_argument('-bins', '--bins', action='store', default=100, type=int,
                     help='Number of bins in x/y/z (default: 100)')
-parser.add_argument('-sfb', '--starformationbins', action='store', default=100,
-                    type=int, help='''
+parser.add_argument('-sfbins', '--starformationbins', action='store', 
+                    default=100, type=int, help='''
                     Number of bins in x/y when calculating the star formation
                     rate surface density (default: 100)
                     ''')
+parser.add_argument('-levels', '--levels', action='store', default=5, type=int,
+                    help='Number of levels for the gas resolution plot')
+parser.add_argument('-smooth', '--smooth', action='store', default=0, type=int,
+                    help='Gaussian smooth level for the gas resolution plot')
 parser.add_argument('-vcr', '--variablecircradius', action='store_true', 
                     default=False, help='''
                     Whether the flags for a variable circularisation radius is
@@ -167,6 +175,10 @@ if args.temperature:
                   blackholefocus=args.blackholefocus, xrange=args.xrange, 
                   yrange=args.yrange, zrange=args.zrange, box=args.box, 
                   cut=args.cut)
+
+if args.resolution:
+    print('  * Generating a gas resolution plot')
+    v.resolution(bins=args.bins, levels=args.levels, smooth=args.smooth) 
 
 if args.stellar:
     print('  * Generating a stellar surface density map')
