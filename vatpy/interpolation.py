@@ -27,7 +27,7 @@ def interpolate_to_2d(pos, unit, values, bins, xrange, yrange, zrange,
     coord = np.column_stack((XX.flatten(), YY.flatten(), ZZ.flatten()))
 
     # Interpolate the data:
-    interp   = NearestNDInterpolator(pos, values)
+    interp = NearestNDInterpolator(pos, values)
     if weights:
         interp_w = NearestNDInterpolator(pos, weights)
     
