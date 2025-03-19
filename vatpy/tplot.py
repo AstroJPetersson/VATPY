@@ -79,16 +79,30 @@ class TerminalPlot:
         numpart = h['Header'].attrs['NumPart_ThisFile']
 
         print('  * Snapshot information')
-        print(f'  | Time: {np.round(time, 2)} Myr')
-        print(f'  | BoxSize: {np.round(boxsize, 2)} kpc')
+        print(f'  | Time    : {np.round(time, 2)} Myr')
+        print(f'  | BoxSize : {np.round(boxsize, 2)} kpc')
         print('  |')
         print('  | Number of particles')
-        print(f'  | PartType0 (gas):   {numpart[0]}')
-        print(f'  | PartType1 (halo):  {numpart[1]}')
-        print(f'  | PartType2 (disk):  {numpart[2]}')
-        print(f'  | PartType3 (bulge): {numpart[3]}')
-        print(f'  | PartType4 (stars): {numpart[4]}')
-        print(f'  | PartType5 (bndry): {numpart[5]}')
+        print(f'  | PartType0 (gas)   :   {numpart[0]}')
+        print(f'  | PartType1 (halo)  :  {numpart[1]}')
+        print(f'  | PartType2 (disk)  :  {numpart[2]}')
+        print(f'  | PartType3 (bulge) : {numpart[3]}')
+        print(f'  | PartType4 (stars) : {numpart[4]}')
+        print(f'  | PartType5 (bndry) : {numpart[5]}')
+
+        if numpart[5] == 1:
+            print('  |')
+            print('  * A central BH detected')
+            Pbh = h['PartType5']['Coordinates'][0]
+            print(f'  | Coordinates [i.u.] : ({Pbh[0]}, {Pbh[1]}, {Pbh[2]})')
+            Vbh = h['PartType5']['Velocities'][0]
+            print(f'  | Velocities [i.u.]  : ({Vbh[0]}, {Vbh[1]}, {Vbh[2]})')
+            Mbh = h['PartType5']['Masses'][0] * iu['umass'] / self.Msol
+            print(f'  | Mass [i.u.]        : {Mbh}')
+            IDbh = h['PartType5']['ParticleIDs'][0]
+            print(f'  | Particle ID        : {IDbh}')
+        
+        print('  |')
 
         return 0
 
